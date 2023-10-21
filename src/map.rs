@@ -38,4 +38,20 @@ impl Map {
             }
         }
     }
+
+    pub fn inside_map(&self, point: Point) -> bool {
+        point.x >= 0 && point.x < SCREEN_WIDTH && point.y >= 0 && point.y < SCREEN_HEIGHT
+    }
+
+    pub fn can_enter_tile(&self, point: Point) -> bool {
+        self.inside_map(point) && self.tiles[map_idx(point.x, point.y)] == TyleType::Floor
+    }
+
+    pub fn try_idx(&self, point: Point) -> Option<usize> {
+        if !self.inside_map(point) {
+            return None;
+        } else {
+            Some(map_idx(point.x, point.y))
+        }
+    }
 }
