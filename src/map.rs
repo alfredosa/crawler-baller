@@ -23,20 +23,54 @@ impl Map {
         }
     }
 
-    pub fn render(&self, ctx: &mut BTerm) {
-        for y in 0..SCREEN_HEIGHT {
-            for x in 0..SCREEN_WIDTH {
-                let idx = map_idx(x, y);
-                match self.tiles[idx] {
-                    TyleType::Floor => {
-                        ctx.set(x, y, YELLOW, BLACK, to_cp437('.'));
-                    }
-                    TyleType::Wall => {
-                        ctx.set(x, y, GREEN, BLACK, to_cp437('#'));
+    pub fn render(&self, ctx: &mut BTerm, camera: &Camera) {
+        ctx.set_active_console(0); // Set the active console to the main console.
+        for y in camera.top_y..camera.bottom_y {
+            for x in camera.left_x..camera.right_x {
+                if self.inside_map(Point::new(x, y)) {
+                    let idx = map_idx(x, y);
+                    match self.tiles[idx] {
+                        TyleType::Floor => {
+                            ctx.set(
+                                x - camera.left_x,
+                                y - camera.top_y,
+                                WHITE,
+                                BLACK,
+                                to_cp437('.'),
+                            );
+                        }
+                        TyleType::Wall => {
+                            ctx.set(
+                                x - camera.left_x,
+                                y - camera.top_y,
+                                CRIMSON,
+                                BLACK,
+                                to_cp437('#'),
+                            );
+                        }
                     }
                 }
             }
         }
+
+        // INSTEAD of rendering the whole map... We generate the map (map builder), then
+        // get the camera position, which is based on the player position, and then we
+        // render only the tiles that are inside the camera view.
+        // KEY CONCEPT
+
+        // for y in 0..SCREEN_HEIGHT {
+        //     for x in 0..SCREEN_WIDTH {
+        //         let idx = map_idx(x, y);
+        //         match self.tiles[idx] {
+        //             TyleType::Floor => {
+        //                 ctx.set(x, y, YELLOW, BLACK, to_cp437('.'));
+        //             }
+        //             TyleType::Wall => {
+        //                 ctx.set(x, y, GREEN, BLACK, to_cp437('#'));
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     pub fn inside_map(&self, point: Point) -> bool {

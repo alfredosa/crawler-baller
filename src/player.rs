@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{camera, prelude::*};
 
 pub struct Player {
     pub health: f32,
@@ -17,10 +17,11 @@ impl Player {
         }
     }
 
-    pub fn render(&self, ctx: &mut BTerm) {
+    pub fn render(&self, ctx: &mut BTerm, camera: &Camera) {
+        ctx.set_active_console(1);
         ctx.set(
-            self.position.x,
-            self.position.y,
+            self.position.x - camera.left_x,
+            self.position.y - camera.top_y,
             WHITE,
             BLACK,
             to_cp437('@'),
@@ -34,7 +35,7 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, ctx: &mut BTerm, map: &Map) {
+    pub fn update(&mut self, ctx: &mut BTerm, map: &Map, camera: &mut Camera) {
         if let Some(key) = ctx.key {
             let delta = match key {
                 VirtualKeyCode::Left => Point::new(-1, 0),
@@ -45,12 +46,23 @@ impl Player {
                 _ => Point::new(0, 0),
             };
 
+            // print if key pressed:
+
+            if key == VirtualKeyCode::Left
+                || key == VirtualKeyCode::Right
+                || key == VirtualKeyCode::Up
+                || key == VirtualKeyCode::Down
+            {
+                println!("Key pressed: {:?}", key);
+            }
+
             if key == VirtualKeyCode::Space {
                 self.take_damage(99.0) // change soon to be damage
             }
 
             if map.can_enter_tile(self.position + delta) {
                 self.position += delta;
+                camera.on_player_move(self.position);
             }
         }
     }
