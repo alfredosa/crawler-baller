@@ -3,11 +3,12 @@ use crate::prelude::*;
 #[system]
 #[read_component(Player)]
 #[write_component(Point)]
-pub fn player_input(ecs: &mut SubWorld,
-    #[resource] map: &Map, 
+pub fn player_input(
+    ecs: &mut SubWorld,
+    #[resource] map: &Map,
     #[resource] key: &Option<VirtualKeyCode>,
     #[resource] camera: &mut Camera,
-    ) {
+) {
     if let Some(key) = key {
         let delta = match key {
             VirtualKeyCode::Left => Point::new(-1, 0),
@@ -23,7 +24,7 @@ pub fn player_input(ecs: &mut SubWorld,
             let mut players = <&mut Point>::query().filter(component::<Player>());
             // ecs in iter_mut is a mutable reference to the world. We are iterating over all the players in the world.
             // iter mut is Legion syntax for iterating over a query result with param mutability.
-            players.iter_mut(ecs).for_each(|pos| { 
+            players.iter_mut(ecs).for_each(|pos| {
                 let destination = *pos + delta;
                 if map.can_enter_tile(destination) {
                     *pos = destination;
@@ -32,5 +33,4 @@ pub fn player_input(ecs: &mut SubWorld,
             });
         }
     }
-    
 }

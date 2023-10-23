@@ -36,7 +36,15 @@ impl State {
         let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let map_builder = MapBuilder::new(&mut rng);
+        
         spawn_player(&mut ecs, map_builder.player_start);
+        
+        map_builder.rooms
+            .iter()
+            .skip(1)
+            .map(|p| p.center())
+            .for_each(|pos| spawn_monster(&mut ecs, &mut rng, pos));
+
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
 
@@ -50,10 +58,10 @@ impl State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
-        ctx.set_active_console(0);
-        ctx.cls();
-        ctx.set_active_console(1);
-        ctx.cls();
+        ctx.set_active_console(0); // Set the active console to the main console.
+        ctx.cls(); // Clear the main console.
+        ctx.set_active_console(1); // Set the active console to the UI console.
+        ctx.cls(); // Clear the UI console.
         self.resources.insert(ctx.key); // insert the key pressed into the resources (Available for all systems)
         self.systems.execute(&mut self.ecs, &mut self.resources);
         render_draw_buffer(ctx).expect("Render error"); // render the draw buffer (The draw buffer is the console that we are drawing to)
