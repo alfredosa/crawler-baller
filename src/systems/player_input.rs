@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 #[system]
+/// the player input takes care of any action recorded by the player, be it mouse or keys
 #[read_component(Player)]
 #[write_component(Point)]
 pub fn player_input(

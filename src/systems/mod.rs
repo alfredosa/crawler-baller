@@ -5,6 +5,7 @@ mod collisions;
 
 use crate::prelude::*;
 
+/// takes care of mounting all the systems and building them
 pub fn build_scheduler() -> Schedule {
     Schedule::builder()
         .add_system(player_input::player_input_system())
