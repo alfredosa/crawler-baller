@@ -10,11 +10,7 @@ pub fn entity_render(ecs: &SubWorld, #[resource] camera: &Camera) {
     <(&Point, &Render)>::query()
         .iter(ecs)
         .for_each(|(pos, render)| {
-            draw_batch.set(
-                *pos - offset,
-                render.color,
-                render.glyph,
-            );
+            draw_batch.set(*pos - offset, render.color, render.glyph);
         });
     draw_batch.submit(5000).expect("Batch error");
 }

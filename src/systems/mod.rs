@@ -1,16 +1,50 @@
-mod player_input;
-mod map_render;
-mod entity_render;
 mod collisions;
+mod entity_render;
+mod map_render;
+mod player_input;
+mod random_movement;
+mod end_turn;
 
 use crate::prelude::*;
 
-/// takes care of mounting all the systems and building them
-pub fn build_scheduler() -> Schedule {
+use self::end_turn::end_turn;
+
+/// takes the input of the player at any given moment
+pub fn build_input_scheduler() -> Schedule {
     Schedule::builder()
         .add_system(player_input::player_input_system())
+        .flush()
         .add_system(map_render::map_render_system())
         .add_system(entity_render::entity_render_system())
+        .build()
+}
+
+
+/// takes care of mounting all the systems and building them on player turn
+pub fn build_player_scheduler() -> Schedule {
+    Schedule::builder()
         .add_system(collisions::collisions_system())
+        .flush()
+
+        .add_system(map_render::map_render_system())
+        .add_system(entity_render::entity_render_system())
+        .add_system(end_turn::end_turn_system())
+        .build()
+}
+
+/// takes care of mounting all systems and building them for the enemy turn
+
+pub fn build_enemy_scheduler() -> Schedule {
+    Schedule::builder()
+
+        .add_system(random_movement::random_movement_system())
+        .flush()
+
+        .add_system(collisions::collisions_system())
+        .flush()
+
+        .add_system(map_render::map_render_system())
+        .add_system(entity_render::entity_render_system())
+        .add_system(end_turn::end_turn_system())
         .build()
 }

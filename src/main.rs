@@ -4,6 +4,7 @@ mod map;
 mod map_builder;
 mod spawners;
 mod systems;
+mod turn_state;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
@@ -17,6 +18,7 @@ mod prelude {
     pub use crate::map_builder::*;
     pub use crate::spawners::*;
     pub use crate::systems::*;
+    pub use crate::turn_state::*;
     pub use legion::systems::CommandBuffer;
     pub use legion::world::SubWorld;
     pub use legion::*;
@@ -27,7 +29,9 @@ use prelude::*;
 struct State {
     ecs: World,
     resources: Resources,
-    systems: Schedule,
+    input_system: Schedule,
+    player_system: Schedule,
+    enemy_system: Schedule
 }
 
 impl State {
@@ -36,10 +40,11 @@ impl State {
         let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let map_builder = MapBuilder::new(&mut rng);
-        
+
         spawn_player(&mut ecs, map_builder.player_start);
-        
-        map_builder.rooms
+
+        map_builder
+            .rooms
             .iter()
             .skip(1)
             .map(|p| p.center())
@@ -47,11 +52,14 @@ impl State {
 
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
+        resources.insert(TurnState::AwaitingInput);
 
         Self {
             ecs,
             resources,
-            systems: build_scheduler(),
+            input_system: build_input_scheduler(),
+            player_system: build_player_scheduler(),
+            enemy_system: build_enemy_scheduler()
         }
     }
 }
@@ -63,7 +71,20 @@ impl GameState for State {
         ctx.set_active_console(1); // Set the active console to the UI console.
         ctx.cls(); // Clear the UI console.
         self.resources.insert(ctx.key); // insert the key pressed into the resources (Available for all systems)
-        self.systems.execute(&mut self.ecs, &mut self.resources);
+        
+        let current_state = self.resources.get::<TurnState>().unwrap().clone();
+        match current_state {
+            TurnState::AwaitingInput => {
+                self.input_system.execute(&mut self.ecs, &mut self.resources);
+            }
+            TurnState::PlayerTurn => {
+                self.player_system.execute(&mut self.ecs, &mut self.resources);
+            }
+            TurnState::EnemyTurn => {
+                self.enemy_system.execute(&mut self.ecs, &mut self.resources);
+            }
+        }
+
         render_draw_buffer(ctx).expect("Render error"); // render the draw buffer (The draw buffer is the console that we are drawing to)
     }
 }
