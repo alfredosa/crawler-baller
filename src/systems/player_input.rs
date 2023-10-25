@@ -1,3 +1,5 @@
+use std::process::CommandArgs;
+
 use crate::prelude::*;
 
 #[system]
@@ -6,11 +8,13 @@ use crate::prelude::*;
 #[write_component(Point)]
 pub fn player_input(
     ecs: &mut SubWorld,
-    #[resource] map: &Map,
+    commands: &mut CommandBuffer,
     #[resource] key: &Option<VirtualKeyCode>,
-    #[resource] camera: &mut Camera,
     #[resource] turn_state: &mut TurnState
 ) {
+
+    let mut players = <(Entity, &Point)>::query()
+        .filter(component::<Player>());
     if let Some(key) = key {
         let delta = match key {
             VirtualKeyCode::Left => Point::new(-1, 0),
@@ -21,19 +25,14 @@ pub fn player_input(
             _ => Point::new(0, 0),
         };
         if delta.x != 0 || delta.y != 0 {
-            // Get the player position from the world. (Query the world for the player position) &mut Point is a mutable reference to the player position.
-            // How the Query works: We are querying the world for all entities that have a Point component and a Player component.
-            let mut players = <&mut Point>::query().filter(component::<Player>());
-            // ecs in iter_mut is a mutable reference to the world. We are iterating over all the players in the world.
-            // iter mut is Legion syntax for iterating over a query result with param mutability.
-            players.iter_mut(ecs).for_each(|pos| {
+            players.iter_mut(ecs).for_each(|(ent, pos)| {
                 let destination = *pos + delta;
-                if map.can_enter_tile(destination) {
-                    *pos = destination;
-                    camera.on_player_move(destination);
-                    *turn_state = TurnState::PlayerTurn;
-                }
+                commands
+                    .push(((), WantsToMove{entity: *ent, destination}));
+                
             });
+            *turn_state = TurnState::PlayerTurn;
         }
+
     }
 }
