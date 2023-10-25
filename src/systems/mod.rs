@@ -1,10 +1,10 @@
 mod collisions;
+mod end_turn;
 mod entity_render;
 mod map_render;
+mod movement;
 mod player_input;
 mod random_movement;
-mod end_turn;
-mod movement;
 
 use crate::prelude::*;
 
@@ -18,16 +18,13 @@ pub fn build_input_scheduler() -> Schedule {
         .build()
 }
 
-
 /// takes care of mounting all the systems and building them on player turn
 pub fn build_player_scheduler() -> Schedule {
     Schedule::builder()
         .add_system(movement::movement_system())
         .flush()
-        
         .add_system(collisions::collisions_system())
         .flush()
-
         .add_system(map_render::map_render_system())
         .add_system(entity_render::entity_render_system())
         .add_system(end_turn::end_turn_system())
@@ -38,16 +35,12 @@ pub fn build_player_scheduler() -> Schedule {
 
 pub fn build_enemy_scheduler() -> Schedule {
     Schedule::builder()
-
         .add_system(random_movement::random_movement_system())
         .flush()
-
         .add_system(movement::movement_system())
         .flush()
-
         .add_system(collisions::collisions_system())
         .flush()
-        
         .add_system(map_render::map_render_system())
         .add_system(entity_render::entity_render_system())
         .add_system(end_turn::end_turn_system())

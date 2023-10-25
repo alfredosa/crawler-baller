@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+/// render the map
 #[system]
 pub fn map_render(#[resource] map: &Map, #[resource] camera: &Camera) {
     // INSTEAD of rendering the whole map... We generate the map (map builder), then

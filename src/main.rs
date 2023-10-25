@@ -31,7 +31,7 @@ struct State {
     resources: Resources,
     input_system: Schedule,
     player_system: Schedule,
-    enemy_system: Schedule
+    enemy_system: Schedule,
 }
 
 impl State {
@@ -59,7 +59,7 @@ impl State {
             resources,
             input_system: build_input_scheduler(),
             player_system: build_player_scheduler(),
-            enemy_system: build_enemy_scheduler()
+            enemy_system: build_enemy_scheduler(),
         }
     }
 }
@@ -71,17 +71,20 @@ impl GameState for State {
         ctx.set_active_console(1); // Set the active console to the UI console.
         ctx.cls(); // Clear the UI console.
         self.resources.insert(ctx.key); // insert the key pressed into the resources (Available for all systems)
-        
+
         let current_state = self.resources.get::<TurnState>().unwrap().clone();
         match current_state {
             TurnState::AwaitingInput => {
-                self.input_system.execute(&mut self.ecs, &mut self.resources);
+                self.input_system
+                    .execute(&mut self.ecs, &mut self.resources);
             }
             TurnState::PlayerTurn => {
-                self.player_system.execute(&mut self.ecs, &mut self.resources);
+                self.player_system
+                    .execute(&mut self.ecs, &mut self.resources);
             }
             TurnState::EnemyTurn => {
-                self.enemy_system.execute(&mut self.ecs, &mut self.resources);
+                self.enemy_system
+                    .execute(&mut self.ecs, &mut self.resources);
             }
         }
 
