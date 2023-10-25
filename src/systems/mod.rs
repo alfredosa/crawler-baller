@@ -8,8 +8,6 @@ mod movement;
 
 use crate::prelude::*;
 
-use self::movement::movement;
-
 /// takes the input of the player at any given moment
 pub fn build_input_scheduler() -> Schedule {
     Schedule::builder()
